@@ -17,10 +17,10 @@ local CreateDraggable = require(script.Modules.DraggableObject).new
 local CreateContextMenu = require(script.Modules.ContextMenu).CreateContextMenu
 local CreateContextMenuButton = require(script.Modules.ContextMenu).CreateContextMenuButton
 
-local UpdateLinting = require(script.Modules.Linting).Update
+local UpdateAC = require(script.Modules.Autocomplete).Update
 local SyntaxHighlight = require(script.Modules.Highlighting).run
 
-local LintCrawl = require(script.Modules.Linting).CrawlForDescendents
+local Crawl = require(script.Modules.Autocomplete).CrawlForDescendents
 
 local PentiumClientLoadCode = require(script.Modules.vLua)
 local PentiumLoadCode = function(stuff: string)
@@ -88,7 +88,7 @@ local function Start()
 		]])
 	end)
 	
-	LintCrawl(game)
+	Crawl(game)
 	
 	Pentium.Main.RawInput.Changed:Connect(function(property: string)
 		if property == "Text" then
@@ -144,7 +144,7 @@ local function Start()
 			Pentium.Main.LineNumbers.Text = Pentium.Main.LineNumbers.Text .. newline(tostring(i))
 		end
 		
-		UpdateLinting()
+		UpdateAC()
 	end)
 	
 	coroutine.wrap(CursorBlink)()
