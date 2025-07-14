@@ -22,7 +22,6 @@ jobs:
               run: |
                   rokit install --no-trust-check
                   rojo build build.project.json -o Pentium.rbxm
-
             - uses: "marvinpinto/action-automatic-releases@latest"
               with:
                   repo_token: "${{ secrets.GITHUB_TOKEN }}"
