@@ -1,0 +1,32 @@
+name: CD
+
+on:
+    push:
+        branches:
+            - "master"
+jobs:
+    release:
+        name: Release
+        runs-on: "ubuntu-latest"
+
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v3
+
+            - uses: kalrnlo/setup-rokit@v1.0.0
+              name: Setup RoKit
+              with:
+                  token: ${{ github.token }}
+
+            - name: "Build"
+              run: |
+                  rokit install --no-trust-check
+                  rojo build build.project.json -o Pentium.rbxm
+
+            - uses: "marvinpinto/action-automatic-releases@latest"
+              with:
+                  repo_token: "${{ secrets.GITHUB_TOKEN }}"
+                  prerelease: false
+                  automatic_release_tag: "Latest"
+                  files: |
+                      Pentium.rbxm
