@@ -8,7 +8,7 @@ ContextMenu.Menus = {}
 local Log = require(script.Parent.Log)
 
 function ContextMenu.CreateContextMenu(contentMenuName: string)
-	local thisMenuButton = ContextMenu.Script.Origin.ContextMenu:Clone()
+	local thisMenuButton = ContextMenu.Script.Templates.ContextMenu:Clone()
 	ContextMenu.Menus[contentMenuName] = thisMenuButton
 	
 	thisMenuButton.Name = contentMenuName
@@ -38,7 +38,7 @@ function ContextMenu.CreateContextMenuButton(contentMenuName: string, contextMen
 		return
 	end
 	
-	local button = ContextMenu.Script.Origin.ContextMenuButton:Clone()
+	local button = ContextMenu.Script.Templates.ContextMenuButton:Clone()
 	button.Parent = menu.ContextMenu
 	button.TextLabel.Text = contextMenuButton
 	

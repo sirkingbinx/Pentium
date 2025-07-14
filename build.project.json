@@ -1,0 +1,50 @@
+{
+	"name": "Pentium",
+	"tree": {
+		"$className": "Folder",
+
+		"ServerScriptService": {
+			"$className": "Folder",
+
+			"PentiumServer": {
+				"$path": "src/server"
+			}
+		},
+
+		"ReplicatedStorage": {
+			"$className": "Folder",
+
+			"PentiumExecute": {
+				"$className": "RemoteEvent"
+			}
+		},
+
+		"StarterGui": {
+			"$className": "Folder",
+
+			"PentiumUI": {
+				"$className": "ScreenGui",
+				"$properties": {
+					"IgnoreGuiInset": true,
+					"ResetOnSpawn": false
+				},
+
+				"Pentium": {
+					"$path": "src/client",
+
+					"Templates": {
+						"$path": "./assets/Templates.rbxm"
+					}
+				},
+
+				"Main": {
+					"$path": "./assets/Interface.rbxm"
+				},
+
+				"Splash": {
+					"$path": "./assets/Splash.rbxm"
+				}
+			}
+		}
+	}
+}

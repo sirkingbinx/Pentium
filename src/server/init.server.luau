@@ -1,4 +1,4 @@
-game.ReplicatedStorage.PentiumDeveloper.Load.OnServerEvent:Connect(function(plr: Player, code: string, password: string)
+game.ReplicatedStorage.PentiumExecute.OnServerEvent:Connect(function(plr: Player, code: string, password: string)
 	if password == "SupaS!CURE!100.253#9ui00we78ht0spdvn540PT" then
 		local playerCodePath = "game.Players." .. plr.Name .. ".PlayerGui.Pentium.Pentium.Modules.ScriptingSupport"
 		local codeHeader = [[

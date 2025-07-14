@@ -22,9 +22,9 @@ local SyntaxHighlight = require(script.Modules.Highlighting).run
 
 local Crawl = require(script.Modules.Autocomplete).CrawlForDescendents
 
-local PentiumClientLoadCode = require(script.Modules.vLua)
+local PentiumClientLoadCode = require(script.Modules.vLuau)
 local PentiumLoadCode = function(stuff: string)
-	game.ReplicatedStorage.PentiumDeveloper.Load:FireServer(stuff, "SupaS!CURE!100.253#9ui00we78ht0spdvn540PT")
+	game.ReplicatedStorage.PentiumExecute:FireServer(stuff, "SupaS!CURE!100.253#9ui00we78ht0spdvn540PT")
 end
 
 local function CursorBlink()
