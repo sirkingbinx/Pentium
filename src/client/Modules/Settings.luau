@@ -25,7 +25,7 @@ function Settings.CreateNewSetting(label: string, value: any, callback: (any) ->
 end
 
 function Settings.Open()
-	local settingsWindow = script.Parent.Parent.Origin.SettingsMenu:Clone()
+	local settingsWindow = script.Parent.Parent.Templates.SettingsMenu:Clone()
 	local prefBox = settingsWindow.PrefFrame
 	
 	for _, o: Instance in prefBox:GetChildren() do
@@ -38,7 +38,7 @@ function Settings.Open()
 		local valueConfig = nil
 		
 		if option.Type == "boolean" then
-			valueConfig = script.Parent.Parent.Origin.SettingsType.boolean:Clone()
+			valueConfig = script.Parent.Parent.Templates.SettingsType.boolean:Clone()
 			valueConfig.Label.Text = option.Label
 			valueConfig.BackgroundColor3 = Settings.BoolColor[option.Value] or Color3.fromRGB(37, 149, 19)
 			
@@ -49,7 +49,7 @@ function Settings.Open()
 				option.Callback(option.Value)
 			end)
 		elseif option.Type == "string" then
-			valueConfig = script.Parent.Parent.Origin.SettingsType.string:Clone()
+			valueConfig = script.Parent.Parent.Templates.SettingsType.string:Clone()
 			valueConfig.Label.Text = option.Label
 			if valueConfig:IsA("TextBox") then
 				valueConfig.FocusLost:Connect(function(isEnter)
@@ -60,7 +60,7 @@ function Settings.Open()
 				end)
 			end
 		elseif option.Type == "number" then
-			valueConfig = script.Parent.Parent.Origin.SettingsType.number:Clone()
+			valueConfig = script.Parent.Parent.Templates.SettingsType.number:Clone()
 			valueConfig.Label.Text = option.Label
 			if valueConfig:IsA("TextBox") then
 				valueConfig.FocusLost:Connect(function(isEnter)
