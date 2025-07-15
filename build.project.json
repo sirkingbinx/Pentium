@@ -26,7 +26,8 @@
 				"$className": "ScreenGui",
 				"$properties": {
 					"IgnoreGuiInset": true,
-					"ResetOnSpawn": false
+					"ResetOnSpawn": false,
+					"ZIndexBehavior": "Sibling"
 				},
 
 				"Pentium": {
