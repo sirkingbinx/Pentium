@@ -86,6 +86,10 @@ local function Start()
 			Pentium:Destroy()
 		end
 	end
+
+	-- Allows default cursor to show, adding highlight support without us doing anything
+	Pentium.Main.Editor.RawInput.TextColor3 = Pentium.Main.BackgroundColor3
+	Pentium.Main.Editor.RawInput.TextTransparency = 0
 	
 	ContextMenuModule.CreateContextMenuButton("File", "Run", function()
 		CurrentRunContext(Pentium.Main.Editor.RawInput.Text)
