@@ -20,7 +20,7 @@ lookup table looks like this:
 ["parent"] = {{objName, objClass}, ...}
 
 ["game"] = {{"Workspace", "Workspace"}, {"Players", "Players"}, {"Lighting", "Lighting"}, ...}
-["game.Workspace" = {{"Workspace part", "Part"}, {"Workspace folder", "Folder"}}
+["game.Workspace"] = {{"Workspace part", "Part"}, {"Workspace folder", "Folder"}}
 ]]
 
 local function Contains(s: string, t: {}): boolean
@@ -58,6 +58,21 @@ function Autocomplete.CrawlForDescendents(obj: Instance): {Instance}
 			end
 		end
 	end)()
+end
+
+local function GetPath(line: string): string
+	if line:find(".") then
+		local candidates = {}
+		
+		for i, s: string in line:split(" ") do
+			if not s:find(".") then continue end
+			table.insert(candidates, s)
+		end
+		
+		return candidates[#candidates] or ""
+	else
+		return ""
+	end
 end
 
 local function ObjectsInPath(p: string): {}
@@ -142,7 +157,7 @@ local function GetAllMatchingKeywords(search: string)
 end
 
 local function CreateSuggestionLabel(keyword: {})
-	local Label = script.Parent.Parent.Origin.KeywordHintLabel:Clone()
+	local Label = script.Parent.Parent.Templates.KeywordHintLabel:Clone()
 	
 	local SyntaxHighlight = require(script.Parent.Highlighting).run
 	
@@ -169,10 +184,11 @@ function Autocomplete.Update(doGameCrawl: boolean)
 			if c[#c] ~= "." then
 				allKeywords = GetAllObjectsWithPattern(lastWord)
 			else
-				local ogPath = LastLineInCode():sub(1, -2)
-				local truePath = LastLineInCode():sub(1, -2)
+				local truePath = GetPath(LastLineInCode()):sub(1, -2)
+				local gameSearch = false
 				
 				if truePath:sub(1, 4) == "game" then
+					gameSearch = true
 					truePath = truePath:sub(6, -1)
 				end
 				
@@ -180,7 +196,7 @@ function Autocomplete.Update(doGameCrawl: boolean)
 					allKeywords = ObjectsInPath(truePath)
 					engineKeywords = {}
 				else
-					if ogPath == "game" then
+					if gameSearch then
 						allKeywords = ObjectsInPath("____PENTIUM_ROOT")
 						engineKeywords = {}
 					else
