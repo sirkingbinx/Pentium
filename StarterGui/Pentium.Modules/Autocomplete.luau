@@ -115,7 +115,7 @@ local function GetKeyword(name: string)
 end
 
 local function LastWordInCode()
-	local splitKeyword = script.Parent.Parent.Parent.Main.RawInput.Text:split(" ")
+	local splitKeyword = script.Parent.Parent.Parent.Main.Editor.RawInput.Text:split(" ")
 	splitKeyword = splitKeyword[#splitKeyword]:split(".")
 	splitKeyword = splitKeyword[#splitKeyword]:split(":")
 	
@@ -123,7 +123,7 @@ local function LastWordInCode()
 end
 
 local function LastLineInCode()
-	local splitKeyword = script.Parent.Parent.Parent.Main.RawInput.Text:split('\n')
+	local splitKeyword = script.Parent.Parent.Parent.Main.Editor.RawInput.Text:split('\n')
 	return splitKeyword[#splitKeyword]
 end
 
@@ -148,12 +148,12 @@ local function CreateSuggestionLabel(keyword: {})
 	
 	Label.Text = SyntaxHighlight(keyword[1])
 	Label.Group.Text = keyword[2]
-	Label.Parent = script.Parent.Parent.Parent.Main.KeywordHint
+	Label.Parent = script.Parent.Parent.Parent.Main.Editor.KeywordHint
 end
 
 local StillSearching = false
 
-function Autocomplete.Update()
+function Autocomplete.Update(doGameCrawl: boolean)
 	if StillSearching then return end
 	
 	coroutine.wrap(function()
@@ -165,30 +165,32 @@ function Autocomplete.Update()
 		
 		local c = LastLineInCode():split("")
 		
-		if c[#c] ~= "." then
-			allKeywords = GetAllObjectsWithPattern(lastWord)
-		else
-			local ogPath = LastLineInCode():sub(1, -2)
-			local truePath = LastLineInCode():sub(1, -2)
-			
-			if truePath:sub(1, 4) == "game" then
-				truePath = truePath:sub(6, -1)
-			end
-			
-			if truePath ~= "" then
-				allKeywords = ObjectsInPath(truePath)
-				engineKeywords = {}
+		if doGameCrawl then
+			if c[#c] ~= "." then
+				allKeywords = GetAllObjectsWithPattern(lastWord)
 			else
-				if ogPath == "game" then
-					allKeywords = ObjectsInPath("____PENTIUM_ROOT")
+				local ogPath = LastLineInCode():sub(1, -2)
+				local truePath = LastLineInCode():sub(1, -2)
+				
+				if truePath:sub(1, 4) == "game" then
+					truePath = truePath:sub(6, -1)
+				end
+				
+				if truePath ~= "" then
+					allKeywords = ObjectsInPath(truePath)
 					engineKeywords = {}
 				else
-					GetAllObjectsWithPattern(lastWord)
+					if ogPath == "game" then
+						allKeywords = ObjectsInPath("____PENTIUM_ROOT")
+						engineKeywords = {}
+					else
+						GetAllObjectsWithPattern(lastWord)
+					end
 				end
 			end
 		end
 		
-		for _, t in script.Parent.Parent.Parent.Main.KeywordHint:GetChildren() do
+		for _, t in script.Parent.Parent.Parent.Main.Editor.KeywordHint:GetChildren() do
 			if t:IsA("TextLabel") then t:Destroy() end
 		end
 		
@@ -201,7 +203,7 @@ function Autocomplete.Update()
 			CreateSuggestionLabel(l)
 		end
 		
-		script.Parent.Parent.Parent.Main.KeywordHint.Size = UDim2.new(0, 250, 0, (#allKeywords + #engineKeywords) * 25)
+		script.Parent.Parent.Parent.Main.Editor.KeywordHint.Size = UDim2.new(0, 250, 0, (#allKeywords + #engineKeywords) * 25)
 		--else
 		--	for _, k in allPath do
 		--		CreateSuggestionLabel(k)

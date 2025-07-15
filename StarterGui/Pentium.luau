@@ -1,5 +1,5 @@
 local Pentium = script.Parent
-local PentiumVersion = "1.0.0"
+local PentiumVersion = "1.1.0"
 
 local ActivateButton: GuiButton = nil
 
@@ -14,22 +14,32 @@ local DelMode = DelModes.Destroy
 local CreateMessage = require(script.Modules.Log).DisplayMessage
 local CreateDraggable = require(script.Modules.DraggableObject).new
 
-local CreateContextMenu = require(script.Modules.ContextMenu).CreateContextMenu
-local CreateContextMenuButton = require(script.Modules.ContextMenu).CreateContextMenuButton
+local SettingsModule = require(script.Modules.Settings)
+local ContextMenuModule = require(script.Modules.ContextMenu)
+local AutocompleteModule = require(script.Modules.Autocomplete)
 
-local UpdateAC = require(script.Modules.Autocomplete).Update
 local SyntaxHighlight = require(script.Modules.Highlighting).run
 
-local Crawl = require(script.Modules.Autocomplete).CrawlForDescendents
+local Settings = {
+	SyntaxHighlighting = true,
+	Cursor = true,
+	Autocomplete = true,
+	AutocompleteGameCrawling = true,
+	LineNumbers = true,
+}
 
-local PentiumClientLoadCode = require(script.Modules.vLua)
-local PentiumLoadCode = function(stuff: string)
-	game.ReplicatedStorage.PentiumDeveloper.Load:FireServer(stuff, "SupaS!CURE!100.253#9ui00we78ht0spdvn540PT")
+local PentiumLoadCode = function(code: string)
+	game.ReplicatedStorage.PentiumDeveloper.Load:FireServer(code)
 end
 
 local function CursorBlink()
 	while true do
-		Pentium.Main.Cursor.Visible = not Pentium.Main.Cursor.Visible
+		if Settings.Cursor then
+			Pentium.Main.Editor.Cursor.Visible = not Pentium.Main.Editor.Cursor.Visible
+		else
+			Pentium.Main.Editor.Cursor.Visible = false
+		end
+		
 		task.wait(0.4)
 	end
 end
@@ -42,16 +52,19 @@ end
 
 -- uses \n with string.split to determine the best guess for cursor position
 function CursorPosition(content: string)
-	local _, lineCount = Pentium.Main.RawInput.Text:gsub('\n', '\n')
+	local _, lineCount = Pentium.Main.Editor.RawInput.Text:gsub('\n', '\n')
 	
 	local split = content:split('\n')
 	local last = split[#split] or ""
 	
 	if last == "" then
-		return 30, (lineCount * 16) + 30
+		return 30, (lineCount * 16)
 	else
-		local LineWidth = TextService:GetTextSize(last, Pentium.Main.RawInput.TextSize, Pentium.Main.RawInput.Font, Pentium.Main.RawInput.AbsoluteSize)
-		return LineWidth.X + 30, (lineCount * 16) + 30
+		local LineWidth = TextService:GetTextSize(last, Pentium.Main.Editor.RawInput.TextSize, 
+														Pentium.Main.Editor.RawInput.Font, 
+														Pentium.Main.Editor.RawInput.AbsoluteSize)
+		
+		return LineWidth.X + 30, (lineCount * 16)
 	end
 end
 
@@ -60,9 +73,9 @@ local function Start()
 	
 	CreateDraggable(Pentium.Main, Pentium.Main.Topbar):Enable()
 
-	CreateContextMenu("File")
-	CreateContextMenu("Code")
-	CreateContextMenu("Help")
+	ContextMenuModule.CreateContextMenu("File")
+	ContextMenuModule.CreateContextMenu("Edit")
+	ContextMenuModule.CreateContextMenu("Help")
 	
 	local function Quit()
 		if DelMode == DelModes.Hide then
@@ -72,79 +85,116 @@ local function Start()
 		end
 	end
 	
+	ContextMenuModule.CreateContextMenuButton("File", "Run", function()
+		CurrentRunContext(Pentium.Main.Editor.RawInput.Text)
+	end)
+	
 	-- Quit buttons
-	CreateContextMenuButton("File", "Quit", Quit)
+	ContextMenuModule.CreateContextMenuButton("File", "Quit", Quit)
 	Pentium.Main.Topbar.QuitButton.MouseButton1Click:Connect(Quit)
 	
-	CreateContextMenuButton("Code", "Run", function()
-		CurrentRunContext(Pentium.Main.RawInput.Text)
-	end)
+	ContextMenuModule.CreateContextMenuButton("Edit", "Settings", SettingsModule.Open)
 	
-	CreateContextMenuButton("Help", "About Pentium", function()
+	ContextMenuModule.CreateContextMenuButton("Help", "About Pentium", function()
 		CreateMessage("About Pentium"
-			, [[Pentium Text Editor
-			Version ]] .. PentiumVersion .. [[
-			(C) Copyright 2025 SirKingBinx
-		]])
+			, string.format("Pentium v" .. PentiumVersion)
 	end)
 	
-	Crawl(game)
+	SettingsModule.CreateNewSetting("Syntax Highlighting", Settings.SyntaxHighlighting, function()
+		Settings.SyntaxHighlighting = not Settings.SyntaxHighlighting
+	end)
 	
-	Pentium.Main.RawInput.Changed:Connect(function(property: string)
+	SettingsModule.CreateNewSetting("Cursor", Settings.Cursor, function()
+		Settings.Cursor = not Settings.Cursor
+	end)
+	
+	SettingsModule.CreateNewSetting("Line Numbers", Settings.LineNumbers, function()
+		Settings.LineNumbers = not Settings.LineNumbers
+	end)
+	
+	SettingsModule.CreateNewSetting("Autocomplete", Settings.Autocomplete, function()
+		Settings.Autocomplete = not Settings.Autocomplete
+	end)
+	
+	SettingsModule.CreateNewSetting("Autocomplete Game Crawling", Settings.AutocompleteGameCrawling, function()
+		Settings.AutocompleteGameCrawling = not Settings.AutocompleteGameCrawling
+	end)
+	
+	AutocompleteModule.CrawlForDescendents(game)
+	
+	Pentium.Main.Editor.RawInput.Changed:Connect(function(property: string)
 		if property == "Text" then
-			Pentium.Main.StyleInput.Text = SyntaxHighlight(Pentium.Main.RawInput.Text)
+			if Settings.SyntaxHighlighting then
+				Pentium.Main.Editor.StyleInput.Text = SyntaxHighlight(Pentium.Main.Editor.RawInput.Text)
+			else
+				Pentium.Main.Editor.StyleInput.Text = Pentium.Main.Editor.RawInput.Text
+			end
+		end
+
+		local CursorX, CursorY = CursorPosition(Pentium.Main.Editor.RawInput.Text)
+		
+		if Settings.Cursor then
+			Pentium.Main.Editor.Cursor.Position = UDim2.fromOffset(CursorX, CursorY)
 		end
 		
-		--::::: legacy cursor position code, see CursorPosition function above for current version
-		-- local ScaleX = (Pentium.Main.RawInput.TextBounds.X / Pentium.Main.RawInput.AbsoluteSize.X)
-		-- local ScaleY = (Pentium.Main.RawInput.TextBounds.Y / Pentium.Main.RawInput.AbsoluteSize.Y)
+		if Settings.Autocomplete then
+			Pentium.Main.Editor.KeywordHint.Position = UDim2.new(
+				Pentium.Main.Editor.Cursor.Position.X.Scale, 
+				Pentium.Main.Editor.Cursor.Position.X.Offset, 
+				Pentium.Main.Editor.Cursor.Position.Y.Scale, 
+				Pentium.Main.Editor.Cursor.Position.Y.Offset + 16
+			)
+
+			local Last = string.sub(Pentium.Main.Editor.RawInput.Text, -1)
+			Last = string.lower(Last):gsub('%%', '%%%%')
+				:gsub('^%^', '%%^')
+				:gsub('%$$', '%%$')
+				:gsub('%(', '%%(')
+				:gsub('%)', '%%)')
+				:gsub('%.', '%%.')
+				:gsub('%[', '%%[')
+				:gsub('%]', '%%]')
+				:gsub('%*', '%%*')
+				:gsub('%+', '%%+')
+				:gsub('%-', '%%-')
+				:gsub('%?', '%%?')
+			
+			if Last then
+				local Chars = "abcdefghijklmnopqrstuvwxyz1234567890."
+				local LastCharIsChar = Last ~= "" and string.find(Chars, Last)
+				Pentium.Main.Editor.KeywordHint.Visible = LastCharIsChar or false
+			else
+				Pentium.Main.Editor.KeywordHint.Visible = false
+			end
+		end
 		
-		-- changed Y by 25 to account for the topbar.
-		-- Pentium.Main.Cursor.Position = UDim2.new(ScaleX, 25, ScaleY, 14)
-		--:::::
+		local _, count = Pentium.Main.Editor.RawInput.Text:gsub('\n', '\n')
 		
-		local CursorX, CursorY = CursorPosition(Pentium.Main.RawInput.Text)
-		
-		Pentium.Main.Cursor.Position = UDim2.fromOffset(CursorX, CursorY)
-		
-		Pentium.Main.KeywordHint.Position = UDim2.new(
-			Pentium.Main.Cursor.Position.X.Scale, 
-			Pentium.Main.Cursor.Position.X.Offset, 
-			Pentium.Main.Cursor.Position.Y.Scale, 
-			Pentium.Main.Cursor.Position.Y.Offset + 16
-		)
-		
-		local Last = string.sub(Pentium.Main.RawInput.Text, -1)
-		Last = string.lower(Last):gsub('%%', '%%%%')
-			:gsub('^%^', '%%^')
-			:gsub('%$$', '%%$')
-			:gsub('%(', '%%(')
-			:gsub('%)', '%%)')
-			:gsub('%.', '%%.')
-			:gsub('%[', '%%[')
-			:gsub('%]', '%%]')
-			:gsub('%*', '%%*')
-			:gsub('%+', '%%+')
-			:gsub('%-', '%%-')
-			:gsub('%?', '%%?')
-		
-		if Last then
-			local Chars = "abcdefghijklmnopqrstuvwxyz1234567890."
-			local LastCharIsChar = Last ~= "" and string.find(Chars, Last)
-			Pentium.Main.KeywordHint.Visible = LastCharIsChar or false
+		if Settings.LineNumbers then
+			Pentium.Main.Editor.LineNumbers.Visible = true
+			
+			Pentium.Main.Editor.LineNumbers.Text = ""
+			
+			for i = 1, count + 1 do
+				Pentium.Main.Editor.LineNumbers.Text = Pentium.Main.Editor.LineNumbers.Text .. newline(tostring(i))
+			end
 		else
-			Pentium.Main.KeywordHint.Visible = false
+			Pentium.Main.Editor.LineNumbers.Visible = false
 		end
 		
-		local _, count = Pentium.Main.RawInput.Text:gsub('\n', '\n')
-		
-		Pentium.Main.LineNumbers.Text = ""
-		
-		for i = 1, count + 1 do
-			Pentium.Main.LineNumbers.Text = Pentium.Main.LineNumbers.Text .. newline(tostring(i))
+		if Settings.Autocomplete and Pentium.Main.Editor.KeywordHint.Visible then
+			AutocompleteModule.Update(Settings.AutocompleteGameCrawling)
+		else
+			Pentium.Main.Editor.KeywordHint.Visible = false
 		end
 		
-		UpdateAC()
+		if (count * 16) + 30 > Pentium.Main.Size.Height.Offset then
+			Pentium.Main.Editor.CanvasSize = UDim2.new(
+				Pentium.Main.Editor.CanvasSize.X.Scale, 
+				Pentium.Main.Editor.CanvasSize.X.Offset, 
+				0, (count * 16) + 30
+			)
+		end
 	end)
 	
 	coroutine.wrap(CursorBlink)()
