@@ -2,10 +2,8 @@ local Log = {}
 
 Log.Script = script.Parent.Parent
 
-function Log.DisplayMessage(title: string, content: string, buttons: {string}, plr: Player): string
-	if plr == nil then
-		plr = game.Players.LocalPlayer
-	end
+function Log.DisplayMessage(title: string, content: string, buttons: {string}?, plr: Player?): string
+	plr = plr or game.Players.LocalPlayer
 	
 	local newUI = Instance.new("ScreenGui", plr.PlayerGui)
 	newUI.Name = title
@@ -17,7 +15,7 @@ function Log.DisplayMessage(title: string, content: string, buttons: {string}, p
 	
 	newUserMessage.Visible = true
 	
-	local CreateDraggable = require(script.Parent.DraggableObject).new
+	local CreateDraggable = require(script.Parent:WaitForChild("DraggableObject")).new
 	CreateDraggable(newUserMessage, newUserMessage.Topbar):Enable()
 	
 	if buttons == nil or #buttons == 0 then
@@ -49,6 +47,8 @@ function Log.DisplayMessage(title: string, content: string, buttons: {string}, p
 			end)
 		end
 	end
+
+	return "Error"
 end
 
 return Log

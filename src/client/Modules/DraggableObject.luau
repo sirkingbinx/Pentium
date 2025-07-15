@@ -6,6 +6,11 @@
 	https://devforum.roblox.com/t/simple-module-for-creating-draggable-gui-elements/230678
 --]]
 
+--[[
+Changes made for Pentium's windowing system:
+- Does dragging only when contacting with DraggableObject.DragPoint (which is usally the topbar)
+]]
+
 local UDim2_new = UDim2.new
 
 local UserInputService = game:GetService("UserInputService")
@@ -14,7 +19,7 @@ local DraggableObject 		= {}
 DraggableObject.__index 	= DraggableObject
 
 -- Sets up a new draggable object
-function DraggableObject.new(Object, DragPoint)
+function DraggableObject.new(Object: UIBase, DragPoint: UIBase)
 	local self 			= {}
 	self.Object			= Object
 	self.DragPoint 		= DragPoint

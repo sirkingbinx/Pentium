@@ -7,7 +7,7 @@ Settings.BoolColor = {
 	[false] = Color3.fromRGB(185, 32, 32)
 }
 
-local Log = require(script.Parent.Log)
+local Log = require("./Log")
 local Options = {}
 
 -- By default, the settings config thingy will make your setting type the type() of "value"
